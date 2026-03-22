@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gemini Hackathon AI World</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        overflow: hidden;
+        background-color: #0d1117;
+        display: flex;
+        height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+      #app {
+        flex: 1;
+        min-width: 0;
+        height: 100%;
+      }
+      #app canvas { display: block; width: 100% !important; height: 100% !important; }
+      .agent-label { text-align: center; pointer-events: none; }
+      .agent-label .agent-mood { font-size: 18px; line-height: 1; margin-bottom: 2px; }
+      .agent-label .agent-name {
+        font: bold 13px system-ui, sans-serif;
+        color: #fff;
+        background: rgba(26, 26, 46, 0.92);
+        padding: 4px 10px;
+        border-radius: 6px;
+        white-space: nowrap;
+      }
+      .agent-label .agent-action {
+        font: 11px system-ui, sans-serif;
+        color: #e0e0e0;
+        background: rgba(26, 26, 46, 0.75);
+        padding: 3px 8px;
+        border-radius: 4px;
+        margin-top: 3px;
+        max-width: 200px;
+        white-space: normal;
+      }
+
+      /* ── Keyframe Animations ──────────────────────────── */
+      .spinner {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border: 2px solid #30363d;
+        border-top-color: #58a6ff;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        vertical-align: middle;
+        margin-right: 4px;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      @keyframes pulse-ring {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(88, 166, 255, 0.4); }
+        50% { box-shadow: 0 0 0 6px rgba(88, 166, 255, 0); }
+      }
+      @keyframes fade-in {
+        from { opacity: 0; transform: translateY(-4px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes glow-breathe {
+        0%, 100% { box-shadow: 0 0 4px rgba(88, 166, 255, 0.2); }
+        50% { box-shadow: 0 0 12px rgba(88, 166, 255, 0.5); }
+      }
+
+      /* ── Sidebar Panel ─────────────────────────────────── */
+      #panel {
+        width: 340px;
+        min-width: 340px;
+        height: 100vh;
+        background: #161b22;
+        border-left: 1px solid #30363d;
+        color: #c9d1d9;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        font-size: 13px;
+      }
+      #panel::-webkit-scrollbar { width: 6px; }
+      #panel::-webkit-scrollbar-track { background: #161b22; }
+      #panel::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+
+      #panel .panel-header {
+        padding: 14px 16px;
+        background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+        border-bottom: 2px solid #58a6ff;
+        font-size: 15px;
+        font-weight: 600;
+        color: #58a6ff;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        text-shadow: 0 0 10px rgba(88, 166, 255, 0.4);
+      }
+
+      #panel .section {
+        padding: 12px 16px;
+        border-bottom: 1px solid #21262d;
+        animation: fade-in 0.3s ease-out;
+      }
+      #panel .section-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: #e6edf3;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      #panel .section-title .icon {
+        font-size: 14px;
+      }
+
+      /* ── Color-coded Section Groups ──────────────────── */
+      #panel .sec-agent-card {
+        border-left: 3px solid #d29922;
+        background: linear-gradient(135deg, rgba(210, 153, 34, 0.06) 0%, transparent 100%);
+      }
+      #panel .sec-controls {
+        border-left: 3px solid #2ea043;
+      }
+      #panel .sec-intel {
+        border-left: 3px solid #58a6ff;
+      }
+      #panel .sec-world {
+        border-left: 3px solid #a371f7;
+      }
+      #panel .sec-log {
+        border-left: 3px solid #484f58;
+      }
+
+      /* ── Agent Card ─────────────────────────────────── */
+      .agent-card-name {
+        font-size: 18px;
+        font-weight: 700;
+        color: #e6edf3;
+        margin: 6px 0 4px;
+      }
+      .agent-card-desc {
+        font-style: italic;
+        color: #8b949e;
+        font-size: 12px;
+        line-height: 1.4;
+        margin-top: 6px;
+      }
+      .agent-card-select-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      /* ── Mood Badge ─────────────────────────────────── */
+      .agent-mood-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        text-transform: capitalize;
+      }
+      .mood-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .mood-neutral {
+        background: rgba(139, 148, 158, 0.15);
+        color: #8b949e;
+      }
+      .mood-neutral .mood-dot { background: #8b949e; }
+
+      .mood-happy {
+        background: rgba(46, 160, 67, 0.15);
+        color: #2ea043;
+      }
+      .mood-happy .mood-dot { background: #2ea043; }
+
+      .mood-excited {
+        background: rgba(210, 153, 34, 0.15);
+        color: #d29922;
+      }
+      .mood-excited .mood-dot { background: #d29922; }
+
+      .mood-sad {
+        background: rgba(110, 118, 129, 0.2);
+        color: #6e7681;
+      }
+      .mood-sad .mood-dot { background: #6e7681; }
+
+      .mood-angry {
+        background: rgba(248, 81, 73, 0.15);
+        color: #f85149;
+      }
+      .mood-angry .mood-dot { background: #f85149; }
+
+      .mood-anxious {
+        background: rgba(163, 113, 247, 0.15);
+        color: #a371f7;
+      }
+      .mood-anxious .mood-dot { background: #a371f7; }
+
+      /* ── Tabs ────────────────────────────────────────── */
+      .tab-bar {
+        display: flex;
+        gap: 2px;
+        margin-bottom: 8px;
+        border-bottom: 1px solid #21262d;
+        padding-bottom: 0;
+      }
+      .tab-btn {
+        padding: 5px 10px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #8b949e;
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        transition: color 0.15s, border-color 0.15s;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .tab-btn:hover {
+        color: #c9d1d9;
+      }
+      .tab-btn.active {
+        color: #58a6ff;
+        border-bottom-color: #58a6ff;
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+        animation: fade-in 0.2s ease-out;
+      }
+
+      /* ── Accordion ───────────────────────────────────── */
+      .accordion-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 0;
+        cursor: pointer;
+        user-select: none;
+        border-bottom: 1px solid #21262d;
+      }
+      .accordion-header:hover {
+        color: #e6edf3;
+      }
+      .acc-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #c9d1d9;
+      }
+      .acc-arrow {
+        font-size: 10px;
+        color: #8b949e;
+        transition: transform 0.2s ease;
+      }
+      .accordion-header.open .acc-arrow {
+        transform: rotate(90deg);
+      }
+      .accordion-body {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+      .accordion-body.open {
+        max-height: 600px;
+      }
+
+      /* ── Form Elements ──────────────────────────────── */
+      #panel select {
+        width: 100%;
+        padding: 6px 8px;
+        background: #0d1117;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        color: #c9d1d9;
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      #panel select:focus {
+        border-color: #58a6ff;
+        box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+      }
+
+      #panel input[type="text"] {
+        width: 100%;
+        padding: 6px 8px;
+        background: #0d1117;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        color: #c9d1d9;
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      #panel input[type="text"]:focus {
+        border-color: #58a6ff;
+        box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+      }
+
+      #panel button {
+        padding: 5px 12px;
+        background: #21262d;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        color: #c9d1d9;
+        font-size: 12px;
+        cursor: pointer;
+        transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+      }
+      #panel button:hover {
+        background: #30363d;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      }
+      #panel button:active {
+        transform: translateY(0);
+      }
+      #panel button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+      #panel button.primary {
+        background: linear-gradient(135deg, #238636, #2ea043);
+        border-color: #2ea043;
+        color: #fff;
+      }
+      #panel button.primary:hover {
+        background: linear-gradient(135deg, #2ea043, #3fb950);
+        box-shadow: 0 2px 12px rgba(46, 160, 67, 0.3);
+      }
+      #panel button.accent {
+        background: linear-gradient(135deg, #1f3a5f, #1f6feb);
+        border-color: #388bfd;
+        color: #fff;
+      }
+      #panel button.accent:hover {
+        background: linear-gradient(135deg, #1f6feb, #58a6ff);
+        box-shadow: 0 2px 12px rgba(88, 166, 255, 0.3);
+      }
+
+      #panel .btn-row { display: flex; gap: 6px; margin-top: 6px; }
+      #panel .input-row { display: flex; gap: 6px; margin-top: 6px; }
+      #panel .input-row input { flex: 1; }
+
+      #panel .response-box {
+        margin-top: 8px;
+        max-height: 150px;
+        overflow-y: auto;
+        background: #0d1117;
+        border: 1px solid #21262d;
+        border-radius: 6px;
+        padding: 8px;
+        font-size: 12px;
+        line-height: 1.4;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      #panel .response-box:empty { display: none; }
+
+      /* ── Chat Log — messenger style ────────────── */
+      #panel .chat-log {
+        max-height: 350px;
+        min-height: 100px;
+        background: #0d1117;
+        border: 1px solid #30363d;
+        border-radius: 10px;
+        padding: 12px 10px;
+        font-size: 14px;
+        line-height: 1.55;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      /* ── Message row (avatar + bubble) ──────────── */
+      .chat-msg {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        animation: fade-in 0.2s ease-out;
+      }
+      .chat-msg.user { flex-direction: row-reverse; }
+
+      .chat-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+        flex-shrink: 0;
+        color: #fff;
+      }
+      .chat-msg.user .chat-avatar {
+        background: #238636;
+      }
+      .chat-msg.agent .chat-avatar {
+        background: #1f6feb;
+      }
+
+      .chat-content {
+        max-width: 80%;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .chat-msg.user .chat-content { align-items: flex-end; }
+
+      .chat-sender {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        padding: 0 4px;
+      }
+      .chat-msg.user .chat-sender { color: #3fb950; }
+      .chat-msg.agent .chat-sender { color: #58a6ff; }
+
+      .chat-bubble {
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-size: 14px;
+        line-height: 1.5;
+        word-break: break-word;
+        white-space: pre-wrap;
+      }
+      .chat-msg.user .chat-bubble {
+        background: #1c3a2a;
+        color: #e6edf3;
+        border-top-right-radius: 4px;
+      }
+      .chat-msg.agent .chat-bubble {
+        background: #1a2744;
+        color: #ffffff;
+        border-top-left-radius: 4px;
+        border: 1px solid #253658;
+      }
+      .chat-msg.error .chat-bubble {
+        background: rgba(248,81,73,0.1);
+        color: #f85149;
+        border: 1px solid rgba(248,81,73,0.3);
+      }
+
+      .chat-actions {
+        display: flex;
+        gap: 4px;
+        padding: 2px 4px;
+      }
+      .chat-play-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: rgba(88,166,255,0.15);
+        border: 1px solid rgba(88,166,255,0.25);
+        color: #58a6ff;
+        font-size: 11px;
+        cursor: pointer;
+        padding: 0;
+        transition: background 0.15s;
+      }
+      .chat-play-btn:hover {
+        background: rgba(88,166,255,0.3);
+      }
+
+      #panel .plan-step {
+        padding: 3px 6px;
+        font-size: 12px;
+        border-radius: 4px;
+      }
+      #panel .plan-step.current {
+        background: #1f6feb33;
+        border-left: 3px solid #58a6ff;
+        padding-left: 6px;
+      }
+
+      #panel .rel-card {
+        padding: 6px 8px;
+        margin-top: 4px;
+        background: #0d1117;
+        border: 1px solid #21262d;
+        border-radius: 6px;
+        font-size: 12px;
+      }
+      #panel .rel-card .rel-name { color: #58a6ff; font-weight: 600; }
+      #panel .rel-card .rel-type { color: #8b949e; font-size: 11px; }
+
+      #panel .dir-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 4px;
+        max-width: 160px;
+        margin: 0 auto;
+      }
+      #panel .dir-grid button { padding: 6px; font-size: 14px; }
+
+      #panel .activity-log {
+        flex: 1;
+        min-height: 120px;
+        max-height: 200px;
+        overflow-y: auto;
+        background: #0d1117;
+        border: 1px solid #21262d;
+        border-radius: 6px;
+        padding: 8px;
+        font-size: 11px;
+        font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+        line-height: 1.5;
+      }
+      #panel .log-entry { padding: 1px 0; }
+      #panel .log-time { color: #484f58; }
+      #panel .log-action { color: #58a6ff; }
+      #panel .log-result { color: #8b949e; }
+      #panel .log-error { color: #f85149; }
+
+      /* ── Chat Input Area ──────────────────────────── */
+      #panel .chat-input-area {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        background: #0d1117;
+        border: 1px solid #30363d;
+        border-radius: 10px;
+        padding: 6px 8px;
+        margin-top: 8px;
+      }
+      #panel .chat-input-area input[type="text"] {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 6px 4px;
+        font-size: 14px;
+        outline: none;
+      }
+      #panel .chat-input-area input[type="text"]:focus {
+        box-shadow: none;
+      }
+
+      /* ── Voice Controls ──────────────────────────── */
+      .voice-controls {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .mic-btn, .speaker-toggle {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        padding: 0;
+        line-height: 1;
+        flex-shrink: 0;
+        border: 1px solid #30363d;
+      }
+      .mic-btn.recording {
+        background: #f85149;
+        border-color: #f85149;
+        color: #fff;
+        animation: mic-pulse 1s ease-in-out infinite;
+      }
+      @keyframes mic-pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(248, 81, 73, 0.5); }
+        50% { box-shadow: 0 0 0 6px rgba(248, 81, 73, 0); }
+      }
+      .speaker-toggle.active {
+        background: linear-gradient(135deg, #1f3a5f, #1f6feb);
+        border-color: #388bfd;
+        color: #fff;
+      }
+
+      /* ── Brain Inspector ──────────────────────────── */
+      .brain-label {
+        font-size: 10px;
+        font-weight: 600;
+        color: #8b949e;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-top: 8px;
+        margin-bottom: 4px;
+      }
+      .brain-persona {
+        font-style: italic;
+        color: #8b949e;
+        font-size: 12px;
+        max-height: 60px;
+        overflow-y: auto;
+        line-height: 1.4;
+      }
+      .brain-plan {
+        max-height: 120px;
+        overflow-y: auto;
+        font-size: 12px;
+        line-height: 1.4;
+      }
+      .brain-memories {
+        max-height: 180px;
+        overflow-y: auto;
+        background: #0d1117;
+        border: 1px solid #21262d;
+        border-radius: 6px;
+        padding: 8px;
+        font-size: 12px;
+        line-height: 1.4;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="panel"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

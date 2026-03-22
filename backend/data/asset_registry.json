@@ -1,0 +1,255 @@
+{
+  "_meta": {
+    "tile_size": 16,
+    "render_scale": 3,
+    "description": "Asset registry mapping tile_keys to sprite metadata. The LLM must only use keys from this file when generating world nodes."
+  },
+
+  "terrain": {
+    "grass": {
+      "sprite": "terrain/grass.png",
+      "category": "terrain",
+      "walkable": true,
+      "description": "Green grass tile"
+    },
+    "dirt_path": {
+      "sprite": "terrain/dirt_path.png",
+      "category": "terrain",
+      "walkable": true,
+      "description": "Dirt walking path"
+    },
+    "road": {
+      "sprite": "terrain/road.png",
+      "category": "terrain",
+      "walkable": true,
+      "description": "Paved road"
+    },
+    "water": {
+      "sprite": "terrain/water.png",
+      "category": "terrain",
+      "walkable": false,
+      "description": "Water tile"
+    },
+    "floor_wood": {
+      "sprite": "terrain/floor_wood.png",
+      "category": "terrain",
+      "walkable": true,
+      "description": "Wooden interior floor"
+    },
+    "floor_tile": {
+      "sprite": "terrain/floor_tile.png",
+      "category": "terrain",
+      "walkable": true,
+      "description": "Tiled interior floor (kitchen/bathroom)"
+    },
+    "floor_carpet": {
+      "sprite": "terrain/floor_carpet.png",
+      "category": "terrain",
+      "walkable": true,
+      "description": "Carpeted interior floor (bedroom)"
+    }
+  },
+
+  "structures": {
+    "wall_horizontal": {
+      "sprite": "structures/wall_h.png",
+      "category": "structure",
+      "walkable": false,
+      "description": "Horizontal wall segment"
+    },
+    "wall_vertical": {
+      "sprite": "structures/wall_v.png",
+      "category": "structure",
+      "walkable": false,
+      "description": "Vertical wall segment"
+    },
+    "door": {
+      "sprite": "structures/door.png",
+      "category": "structure",
+      "walkable": true,
+      "description": "Door connecting two rooms or inside/outside"
+    },
+    "window": {
+      "sprite": "structures/window.png",
+      "category": "structure",
+      "walkable": false,
+      "description": "Window in a wall"
+    },
+    "house_exterior": {
+      "sprite": "structures/house.png",
+      "category": "structure",
+      "walkable": false,
+      "w": 6,
+      "h": 5,
+      "description": "House exterior footprint"
+    }
+  },
+
+  "furniture": {
+    "stove": {
+      "sprite": "furniture/stove.png",
+      "category": "furniture",
+      "walkable": false,
+      "description": "Kitchen stove for cooking",
+      "interactable": true,
+      "default_state": "idle"
+    },
+    "fridge": {
+      "sprite": "furniture/fridge.png",
+      "category": "furniture",
+      "walkable": false,
+      "description": "Refrigerator for food storage",
+      "interactable": true,
+      "default_state": "closed"
+    },
+    "kitchen_table": {
+      "sprite": "furniture/kitchen_table.png",
+      "category": "furniture",
+      "walkable": false,
+      "description": "Kitchen table for eating",
+      "interactable": true
+    },
+    "chair": {
+      "sprite": "furniture/chair.png",
+      "category": "furniture",
+      "walkable": false,
+      "description": "Wooden chair",
+      "interactable": true
+    },
+    "bed": {
+      "sprite": "furniture/bed.png",
+      "category": "furniture",
+      "walkable": false,
+      "w": 1,
+      "h": 2,
+      "description": "Bed for sleeping",
+      "interactable": true,
+      "default_state": "made"
+    },
+    "desk": {
+      "sprite": "furniture/desk.png",
+      "category": "furniture",
+      "walkable": false,
+      "description": "Writing desk",
+      "interactable": true
+    },
+    "bookshelf": {
+      "sprite": "furniture/bookshelf.png",
+      "category": "furniture",
+      "walkable": false,
+      "description": "Shelf full of books",
+      "interactable": true
+    },
+    "couch": {
+      "sprite": "furniture/couch.png",
+      "category": "furniture",
+      "walkable": false,
+      "w": 2,
+      "h": 1,
+      "description": "Comfortable couch for relaxing",
+      "interactable": true
+    },
+    "tv": {
+      "sprite": "furniture/tv.png",
+      "category": "furniture",
+      "walkable": false,
+      "description": "Television",
+      "interactable": true,
+      "default_state": "off"
+    },
+    "sink": {
+      "sprite": "furniture/sink.png",
+      "category": "furniture",
+      "walkable": false,
+      "description": "Kitchen or bathroom sink",
+      "interactable": true
+    }
+  },
+
+  "outdoor_objects": {
+    "tree_oak": {
+      "sprite": "outdoor/tree_oak.png",
+      "category": "nature",
+      "walkable": false,
+      "description": "Large oak tree"
+    },
+    "tree_pine": {
+      "sprite": "outdoor/tree_pine.png",
+      "category": "nature",
+      "walkable": false,
+      "description": "Pine tree"
+    },
+    "bush": {
+      "sprite": "outdoor/bush.png",
+      "category": "nature",
+      "walkable": false,
+      "description": "Decorative bush"
+    },
+    "flower_bed": {
+      "sprite": "outdoor/flower_bed.png",
+      "category": "nature",
+      "walkable": true,
+      "description": "Patch of flowers"
+    },
+    "bench": {
+      "sprite": "outdoor/bench.png",
+      "category": "outdoor_furniture",
+      "walkable": false,
+      "description": "Park bench for sitting",
+      "interactable": true
+    },
+    "fountain": {
+      "sprite": "outdoor/fountain.png",
+      "category": "outdoor_furniture",
+      "walkable": false,
+      "w": 2,
+      "h": 2,
+      "description": "Decorative water fountain",
+      "interactable": true
+    },
+    "lamp_post": {
+      "sprite": "outdoor/lamp_post.png",
+      "category": "outdoor_furniture",
+      "walkable": false,
+      "description": "Street lamp"
+    },
+    "mailbox": {
+      "sprite": "outdoor/mailbox.png",
+      "category": "outdoor_furniture",
+      "walkable": false,
+      "description": "Mailbox",
+      "interactable": true
+    },
+    "trash_can": {
+      "sprite": "outdoor/trash_can.png",
+      "category": "outdoor_furniture",
+      "walkable": false,
+      "description": "Trash can",
+      "interactable": true
+    }
+  },
+
+  "characters": {
+    "character_1": {
+      "sprite": "characters/char_1.png",
+      "category": "character",
+      "animated": true,
+      "directions": 4,
+      "description": "Default character sprite"
+    },
+    "character_2": {
+      "sprite": "characters/char_2.png",
+      "category": "character",
+      "animated": true,
+      "directions": 4,
+      "description": "Second character sprite"
+    },
+    "character_3": {
+      "sprite": "characters/char_3.png",
+      "category": "character",
+      "animated": true,
+      "directions": 4,
+      "description": "Third character sprite"
+    }
+  }
+}

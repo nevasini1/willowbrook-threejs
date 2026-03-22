@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+
+# Node / Frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
+
+# Asset downloads (zips & extracted packs — spritesheets are kept)
+frontend/public/assets/downloads/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Persisted memory indexes
+backend/data/memory_indexes/
+
+# Social graph persistence
+backend/data/social_graph/
+
+# OS
+Thumbs.db
