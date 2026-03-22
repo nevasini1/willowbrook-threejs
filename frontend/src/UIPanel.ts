@@ -98,7 +98,7 @@ export class UIPanel {
         this.refreshBrainPanel();
     }
 
-    /** Called from MainScene when an agent sprite is clicked */
+    /** Called when an agent is selected in the 3D view */
     selectAgentById(agentId: string): void {
         this.selectedAgentId = agentId;
         this.agentSelect.value = agentId;

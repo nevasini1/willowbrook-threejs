@@ -12,7 +12,7 @@ We are building a dynamic, AI-driven sandbox game (reminiscent of *The Sims*) wh
 ## 2. How to Best Build This: The Architecture
 
 ### A. Game Engine and Environment State
-`we will use the **Phaser web game development framework** to render sprite-based avatars and maps. 
+The client uses **Three.js** for 3D avatars (GLB) and a grid world; walkability comes from the Tiled **Collisions** layer JSON. 
 
 *   **The Server Loop:** Build a server that maintains a universal JSON data structure representing the world. At each time step, the server parses the JSON for agent actions, moves the agents, updates object states (e.g., a coffee machine turning from "idle" to "brewing"), and sends local visual range data back to the agents.
 *   **Tree-Based Environment Representation:** To allow the LLM to understand the 2D map, represent the **fixed, static parts** of the environment (e.g., landmarks, trees, buildings, and their permanent fixtures) as a **nested JSON tree**. Dynamic objects and agents are tracked separately.
@@ -35,7 +35,7 @@ We are building a dynamic, AI-driven sandbox game (reminiscent of *The Sims*) wh
         }
         ```
     *   This JSON tree is passed directly to the LLM as-is, allowing it to parse the structured environment data natively.
-*   **Procedural Edge Generation (Hackathon Extension):** When the user walks to the map's edge, prompt the LLM to generate new nodes to append to the root environment tree, constrained to your pre-existing asset list. Then, render those new JSON nodes using Phaser. Agents build their own spatial memory subgraphs as they explore these new areas.
+*   **Procedural Edge Generation (Hackathon Extension):** When the user walks to the map's edge, prompt the LLM to generate new nodes to append to the root environment tree, constrained to your pre-existing asset list. Then, reflect those nodes in the world state and 3D client. Agents build their own spatial memory subgraphs as they explore these new areas.
 
 ### B. The Generative Agent Cognitive Architecture
 To make the agents believable rather than reactive chatbots, you must implement a three-part cognitive architecture: **Memory, Reflection, and Planning**.
@@ -109,14 +109,14 @@ When an agent does something bizarre—like trying to cook a shoe or ignoring th
 
 ### D. Implementing User Interaction
 We require users to be able to interact with the world seamlessly. You will implement three interaction vectors:
-1.  **Conversational Avatars:** The user controls a sprite in the world. When approaching an agent, the user types in natural language. The agent retrieves context about the user from its memory stream and generates a dialogue response.
+1.  **Conversational Avatars:** The user controls an avatar in the 3D world. When near an agent, the user types in natural language. The agent retrieves context about the user from its memory stream and generates a dialogue response.
 2.  **The "Inner Voice" Command:** To force an agent to adopt a new goal, the user can prompt them using the persona of the agent's "inner voice" (e.g., "You are going to run for mayor"). The agent will treat this as a directive and alter their plans.
 3.  **Object State Manipulation:** Allow users to rewrite the state of the world in natural language. For instance, a user inputs `<kitchen: stove> is burning`. The server updates the JSON tree, the agent observes the change on the next tick, and dynamically replans to put out the fire. 
 
 ---
 
 ## 3. Next Steps
-1.  **Phase 1 (Basic World & Avatar):** Set up the Phaser engine, the JSON state server, and map simple assets to a basic environment tree. 
+1.  **Phase 1 (Basic World & Avatar):** Set up the Three.js client, the JSON state server, and map simple assets to a basic environment tree. 
 2.  **Phase 2 (Agent Brains):** Build the Python backend that connects to the LLM. Implement the basic Memory Stream and Top-Down Planning.
 3.  **Phase 3 (Retrieval & Reflection):** Add the vector database for relevance embeddings and the periodic reflection loop to make the agents smart.
 4.  **Phase 4 (Procedural Generation & Interaction):** Implement the map-edge trigger that prompts the LLM to expand the environment tree and instantiate new agents. Add the user chat interface.

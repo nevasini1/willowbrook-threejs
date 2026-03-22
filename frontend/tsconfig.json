@@ -16,6 +16,5 @@
     "noFallthroughCasesInSwitch": true,
     "esModuleInterop": true
   },
-  "include": ["src"],
-  "exclude": ["src/scenes", "src/WorldRenderer.ts"]
+  "include": ["src"]
 }

@@ -14,7 +14,7 @@ export default defineConfig({
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
-      // NOTE: /assets is NOT proxied — it serves static sprites from public/assets/.
+      // NOTE: /assets is NOT proxied — static files from public/assets/ (e.g. Tiled JSON, GLB).
       // The asset registry API is available at /api/assets instead.
       '/api/assets': {
         target: 'http://127.0.0.1:8000',

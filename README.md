@@ -12,8 +12,7 @@ Autonomous agents live in a shared world with **persistent memory**, **moods**, 
 
 | Layer | Technology |
 |-------|------------|
-| **3D Client** | **Three.js** (TypeScript) — GLB characters, CSS2D labels, perspective camera, grid ground + Tiled collision |
-| **Legacy (unused in build)** | Phaser 3 sources kept under `frontend/src/scenes/` and `WorldRenderer.ts` (excluded from `tsc`; see `tsconfig.json`) |
+| **3D Client** | **Three.js** (TypeScript) — GLB characters, CSS2D labels, perspective camera, grid ground + Tiled collision JSON |
 | **Backend** | FastAPI + Uvicorn — REST, WebSocket |
 | **LLM** | Gemini 2.5 Flash — reasoning, planning, conversation |
 | **Voice** | Gemini TTS (HD) + browser `SpeechSynthesis` fallback |
@@ -24,7 +23,7 @@ Autonomous agents live in a shared world with **persistent memory**, **moods**, 
 | **Orchestration** | Temporal optional |
 | **Observability** | Langfuse optional |
 | **Dev server** | Vite — proxy to backend |
-| **World data** | Tiled JSON (`the_ville_jan7.json`) — 140×100 tiles, collision layer |
+| **World data** | Tiled map JSON (`the_ville_jan7.json`) — collision layer only at runtime (no 2D tileset art shipped) |
 
 ## 3D assets
 
@@ -60,9 +59,8 @@ Autonomous agents live in a shared world with **persistent memory**, **moods**, 
 │   │   │   └── collisionFromMap.ts  # Loads Tiled "Collisions" layer
 │   │   ├── ApiClient.ts
 │   │   ├── UIPanel.ts
-│   │   ├── scenes/             # Phaser (not in current build)
-│   │   └── WorldRenderer.ts    # Phaser tilemap (not in current build)
-│   ├── public/assets/          # Map, tilesets, 2D sprites, 3D blocky characters
+│   │   └── fallbackWorld.ts
+│   ├── public/assets/          # Tiled collision JSON, 3D blocky characters (GLB)
 │   ├── index.html
 │   ├── vite.config.ts
 │   └── package.json

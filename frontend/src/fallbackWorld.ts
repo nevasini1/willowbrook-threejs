@@ -1,7 +1,6 @@
 /**
- * Fallback agent data for when the backend is offline.
- * Sprite keys match CHARACTER_NAMES loaded in BootScene.
- * Positions from generative_agents canonical spawn data (environment/0.json).
+ * Fallback agent data when the backend is offline.
+ * `sprite_key` is hashed to pick a Kenney blocky GLB variant.
  */
 import { AgentState } from './ApiClient';
 
