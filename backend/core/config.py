@@ -4,6 +4,10 @@ class Settings(BaseSettings):
     project_name: str = "Gemini Hackathon AI World"
     gemini_api_key: str = ""
 
+    # Comma-separated browser origins allowed to call this API (e.g. https://app.example.com).
+    # Empty = allow any origin (fine for local dev; set explicitly in production).
+    cors_origins: str = ""
+
     # Memory
     memory_persist_dir: str = "data/memory_indexes"
 
@@ -67,4 +71,12 @@ class Settings(BaseSettings):
         env_file = ("../.env", ".env")
         extra = "ignore"
 
+
 settings = Settings()
+
+
+def cors_allow_origins() -> list[str]:
+    raw = settings.cors_origins.strip()
+    if not raw:
+        return ["*"]
+    return [o.strip() for o in raw.split(",") if o.strip()]

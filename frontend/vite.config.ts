@@ -19,7 +19,14 @@ export default defineConfig({
       '/api/assets': {
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
-        rewrite: (path: string) => path.replace('/api/assets', '/assets'),
+      },
+      '/auto-tick': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+      '/health': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
       },
       '/agent': {
         target: 'http://127.0.0.1:8000',

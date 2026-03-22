@@ -2,6 +2,8 @@
 
 A town-scale simulation where AI agents plan their days, form relationships, chat, and evolve. The **browser client** is **3D** (Three.js): GLB characters, Tiled collision data, and a DOM sidebar for chat and controls. Reasoning, memory, and voice run on **Gemini** via the Python backend.
 
+**Guests never configure API keys.** The browser only talks to **your** backend; you set `GEMINI_API_KEY` on the server once. See [docs/HOSTING.md](docs/HOSTING.md) for same-origin vs split static+API deploys, `VITE_API_BASE_URL`, and `CORS_ORIGINS`.
+
 ![Willowbrook Screenshot](docs/screenshot.png)
 
 ## What is Willowbrook?
@@ -27,7 +29,7 @@ Autonomous agents live in a shared world with **persistent memory**, **moods**, 
 
 ## 3D assets
 
-- **Kenney [Blocky Characters](https://kenney.nl/assets/blocky-characters)** (CC0) — `frontend/public/assets/3d/blocky-characters/` — GLB/OBJ/FBX used for in-world avatars.
+- **Kenney [Blocky Characters](https://kenney.nl/assets/blocky-characters)** (CC0) — `frontend/public/assets/3d/blocky-characters/Models/GLB format/` — GLB avatars at runtime.
 
 ## Features
 
@@ -65,6 +67,7 @@ Autonomous agents live in a shared world with **persistent memory**, **moods**, 
 │   ├── vite.config.ts
 │   └── package.json
 ├── docs/
+│   ├── HOSTING.md              # Production: CORS, split deploy, nginx
 │   └── screenshot.png
 ├── docker-compose.yml
 ├── Makefile
@@ -110,6 +113,8 @@ npm run build
 ```
 
 Static output is in `frontend/dist/` (serve behind your HTTP server and point API/WebSocket to the backend, or align proxies accordingly).
+
+**Public deploy:** To serve the UI from a different host than the API, build with `VITE_API_BASE_URL=https://your-api.example.com` and set `CORS_ORIGINS` on the backend to your site origin(s). Details: [docs/HOSTING.md](docs/HOSTING.md).
 
 ## How it works
 

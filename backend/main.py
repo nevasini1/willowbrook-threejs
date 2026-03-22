@@ -10,7 +10,7 @@ from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from core.config import settings
+from core.config import cors_allow_origins, settings
 from models.state import WorldState
 from models.api_models import (
     ChatRequest,
@@ -193,10 +193,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title=settings.project_name, lifespan=lifespan)
 
-# Add CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_allow_origins(),
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -232,6 +231,11 @@ def read_root():
     return {"message": "Welcome to the Generative AI World Server"}
 
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
 @app.get("/state", response_model=WorldState)
 def get_state():
     return world_state
@@ -240,6 +244,12 @@ def get_state():
 @app.get("/assets")
 def get_assets():
     """Serve the asset registry so the frontend knows how to render tile_keys."""
+    return asset_registry
+
+
+@app.get("/api/assets")
+def get_assets_api_path():
+    """Same as GET /assets — avoids clashing with static /assets/ on the frontend host."""
     return asset_registry
 
 

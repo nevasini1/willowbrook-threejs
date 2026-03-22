@@ -1,5 +1,8 @@
 /**
  * ApiClient — REST + WebSocket client for the backend.
+ *
+ * Set VITE_API_BASE_URL at build time to point at your public API (e.g. https://api.example.com).
+ * Leave unset for same-origin or Vite dev (proxied). End users never supply API keys; the server holds GEMINI_API_KEY.
  */
 
 export interface EnvironmentNode {
@@ -64,10 +67,31 @@ export interface AssetRegistry {
 
 export type StateUpdateCallback = (state: WorldState) => void;
 
+function normalizeApiBase(): string {
+    const raw = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() ?? '';
+    return raw.replace(/\/$/, '');
+}
+
 export class ApiClient {
     private ws: WebSocket | null = null;
     private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
     private stateCallbacks: StateUpdateCallback[] = [];
+    private readonly apiBase = normalizeApiBase();
+
+    private apiUrl(path: string): string {
+        const p = path.startsWith('/') ? path : `/${path}`;
+        return this.apiBase ? `${this.apiBase}${p}` : p;
+    }
+
+    private wsUrl(): string {
+        if (this.apiBase) {
+            const u = new URL(this.apiBase);
+            const wsProto = u.protocol === 'https:' ? 'wss:' : 'ws:';
+            return `${wsProto}//${u.host}/ws`;
+        }
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        return `${protocol}//${window.location.host}/ws`;
+    }
 
     private async jsonOrThrow(res: Response): Promise<any> {
         const text = await res.text();
@@ -82,17 +106,17 @@ export class ApiClient {
     }
 
     async fetchState(): Promise<WorldState> {
-        const res = await fetch('/state');
+        const res = await fetch(this.apiUrl('/state'));
         return this.jsonOrThrow(res);
     }
 
     async fetchAssets(): Promise<AssetRegistry> {
-        const res = await fetch('/api/assets');
+        const res = await fetch(this.apiUrl('/api/assets'));
         return this.jsonOrThrow(res);
     }
 
     async expandWorld(direction: string, x: number, y: number): Promise<any> {
-        const res = await fetch('/world/expand', {
+        const res = await fetch(this.apiUrl('/world/expand'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ direction, trigger_x: x, trigger_y: y }),
@@ -105,8 +129,7 @@ export class ApiClient {
     }
 
     connectWebSocket(): void {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.host}/ws`;
+        const wsUrl = this.wsUrl();
 
         try {
             this.ws = new WebSocket(wsUrl);
@@ -150,10 +173,8 @@ export class ApiClient {
         }, 3000);
     }
 
-    // ── Agent REST endpoints ──────────────────────────────────────────
-
     async chat(agentId: string, message: string): Promise<{ agent_id: string; reply: string }> {
-        const res = await fetch('/agent/chat', {
+        const res = await fetch(this.apiUrl('/agent/chat'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ agent_id: agentId, message }),
@@ -162,7 +183,7 @@ export class ApiClient {
     }
 
     async innerVoice(agentId: string, command: string): Promise<{ agent_id: string; result: string }> {
-        const res = await fetch('/agent/inner-voice', {
+        const res = await fetch(this.apiUrl('/agent/inner-voice'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ agent_id: agentId, command }),
@@ -171,7 +192,7 @@ export class ApiClient {
     }
 
     async tick(agentId?: string): Promise<{ results: { agent_id: string; action: string; success: boolean; detail: string }[] }> {
-        const res = await fetch('/agent/tick', {
+        const res = await fetch(this.apiUrl('/agent/tick'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ agent_id: agentId ?? null }),
@@ -180,27 +201,27 @@ export class ApiClient {
     }
 
     async getPlan(agentId: string): Promise<any> {
-        const res = await fetch(`/agent/${agentId}/plan`);
+        const res = await fetch(this.apiUrl(`/agent/${agentId}/plan`));
         return this.jsonOrThrow(res);
     }
 
     async regeneratePlan(agentId: string): Promise<any> {
-        const res = await fetch(`/agent/${agentId}/plan/regenerate`, { method: 'POST' });
+        const res = await fetch(this.apiUrl(`/agent/${agentId}/plan/regenerate`), { method: 'POST' });
         return this.jsonOrThrow(res);
     }
 
     async getRelationships(agentId: string): Promise<{ agent_id: string; relationships: Relationship[] }> {
-        const res = await fetch(`/agent/${agentId}/relationships`);
+        const res = await fetch(this.apiUrl(`/agent/${agentId}/relationships`));
         return this.jsonOrThrow(res);
     }
 
     async getMood(agentId: string): Promise<{ agent_id: string; mood: string }> {
-        const res = await fetch(`/agent/${agentId}/mood`);
+        const res = await fetch(this.apiUrl(`/agent/${agentId}/mood`));
         return this.jsonOrThrow(res);
     }
 
     async ttsAudio(agentId: string, text: string): Promise<Blob> {
-        const res = await fetch('/agent/voice/tts', {
+        const res = await fetch(this.apiUrl('/agent/voice/tts'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ agent_id: agentId, text }),
@@ -213,14 +234,12 @@ export class ApiClient {
     }
 
     async runMemoryMaintenance(agentId: string): Promise<any> {
-        const res = await fetch(`/agent/${agentId}/memory/maintenance`, { method: 'POST' });
+        const res = await fetch(this.apiUrl(`/agent/${agentId}/memory/maintenance`), { method: 'POST' });
         return this.jsonOrThrow(res);
     }
 
-    // ── Auto-tick endpoints ─────────────────────────────────────────
-
     async startAutoTick(intervalSeconds?: number): Promise<any> {
-        const res = await fetch('/auto-tick/start', {
+        const res = await fetch(this.apiUrl('/auto-tick/start'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ interval_seconds: intervalSeconds ?? 30 }),
@@ -229,12 +248,12 @@ export class ApiClient {
     }
 
     async stopAutoTick(): Promise<any> {
-        const res = await fetch('/auto-tick/stop', { method: 'POST' });
+        const res = await fetch(this.apiUrl('/auto-tick/stop'), { method: 'POST' });
         return this.jsonOrThrow(res);
     }
 
     async getAutoTickStatus(): Promise<{ running: boolean; interval_seconds: number; tick_count: number }> {
-        const res = await fetch('/auto-tick/status');
+        const res = await fetch(this.apiUrl('/auto-tick/status'));
         return this.jsonOrThrow(res);
     }
 
